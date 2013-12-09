@@ -1,15 +1,20 @@
 package org.makersoft.shards.strategy;
 
+import org.apache.ibatis.session.RowBounds;
 import org.makersoft.shards.ShardId;
 import org.makersoft.shards.rule.Rule;
 import org.makersoft.shards.spring.RuleBean;
 import org.makersoft.shards.strategy.access.ShardAccessStrategy;
+import org.makersoft.shards.strategy.access.impl.ParallelShardAccessStrategy;
+import org.makersoft.shards.strategy.exit.impl.RowCountExitOperation;
 import org.makersoft.shards.strategy.reduce.ShardReduceStrategy;
 import org.makersoft.shards.strategy.resolution.ShardResolutionStrategy;
+import org.makersoft.shards.strategy.resolution.ShardResolutionStrategyData;
 import org.makersoft.shards.strategy.selection.ShardSelectionStrategy;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.*;
 
 import static org.makersoft.shards.session.impl.ShardedSqlSessionImpl.extractId;
 import static org.makersoft.shards.session.impl.ShardedSqlSessionImpl.extractVitualName;
@@ -59,5 +64,58 @@ public class HorizontalShardStrategyFactory implements ShardStrategyFactory {
         };
     }
 
+    private ShardResolutionStrategy getShardResolutionStrategy(final List<ShardId> shardIds) {
+        return new ShardResolutionStrategy() {
+            @Override
+            public List<ShardId> selectShardIdsFromShardResolutionStrategyData(ShardResolutionStrategyData
+                                                                                       shardResolutionStrategyData) {
+                Object obj = shardResolutionStrategyData.getParameter();
+                List<ShardId> rtn = new LinkedList<ShardId>();
+                String virtualTableName = extractVitualName(obj);
+                Long value = (Long) extractId(obj);
 
+                Rule rule = ruleBean.getRule(virtualTableName);
+                String dbIndex = rule.getPhysicsDbIndex(value);
+
+                for(ShardId s : shardIds) {
+                    if(s.getId() == Integer.valueOf(dbIndex)) {
+                        rtn.add(s);
+                    }
+                }
+                return rtn.size() > 0 ? rtn : null;
+            }
+        };
+    }
+
+    private ShardAccessStrategy getShardAccessStrategy() {
+        ThreadFactory factory = new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                Thread t = Executors.defaultThreadFactory().newThread(r);
+                t.setDaemon(true);
+                return t;
+            }
+        };
+
+        ThreadPoolExecutor exec = new ThreadPoolExecutor(10, 50, 60,
+                TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), factory);
+
+        return new ParallelShardAccessStrategy(exec);
+    }
+
+    private ShardReduceStrategy getShardReduceStrategy() {
+        //TODO reduce method
+        return new ShardReduceStrategy() {
+
+            @Override
+            public List<Object> reduce(String statement, Object parameter, RowBounds rowBounds,
+                                       List<Object> values) {
+                if(statement.endsWith("getAllCount")){
+
+                    return new RowCountExitOperation().apply(values);
+                }
+
+                return values;
+            }
+        };
+    }
 }

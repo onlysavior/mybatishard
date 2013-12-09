@@ -73,6 +73,7 @@ public class ShardSelectImpl implements ShardSelect {
 
 	@Override
 	public <K, V> Map<K, V> getResultMap() {
+        //TODO to implement this method
 //		ShardOperation<Map<K, V>> shardOp = new ShardOperation<Map<K, V>>() {
 //			public Map<K, V> execute(SqlSession session, ShardId shardId) {
 //
