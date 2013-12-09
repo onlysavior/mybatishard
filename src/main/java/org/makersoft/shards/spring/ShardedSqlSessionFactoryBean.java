@@ -22,6 +22,7 @@ import org.makersoft.shards.ShardedConfiguration;
 import org.makersoft.shards.cfg.ShardConfiguration;
 import org.makersoft.shards.cfg.impl.ShardConfigurationImpl;
 import org.makersoft.shards.id.IdGenerator;
+import org.makersoft.shards.plugin.RuleBaseStatementInterceptor;
 import org.makersoft.shards.session.ShardedSqlSessionFactory;
 import org.makersoft.shards.strategy.ShardStrategyFactory;
 import org.makersoft.shards.utils.Assert;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.CollectionUtils;
+import sun.plugin.util.PluginSysUtil;
 
 /**
  * 
@@ -72,8 +74,15 @@ public class ShardedSqlSessionFactoryBean implements
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-//		Assert.notNull(dataSources, "data sources can not be null.");
-		
+        if(plugins == null) {
+            plugins = new Interceptor[1];
+            plugins[0] = new RuleBaseStatementInterceptor(ruleBean);
+        } else {
+            Interceptor[] newPlugins = new Interceptor[plugins.length + 1];
+            System.arraycopy(plugins,0,newPlugins,0,plugins.length);
+            newPlugins[newPlugins.length - 1] = new RuleBaseStatementInterceptor(ruleBean);
+        }
+
 		List<ShardConfiguration> shardConfigs = new ArrayList<ShardConfiguration>();
 		
 		if(CollectionUtils.isEmpty(shardConfigurations)){
@@ -92,7 +101,7 @@ public class ShardedSqlSessionFactoryBean implements
 				factoryBean.setTypeHandlersPackage(this.typeHandlersPackage);
 				factoryBean.setTypeAliases(this.typeAliases);
 				factoryBean.setTypeAliasesPackage(this.typeAliasesPackage);
-				
+
 				SqlSessionFactory sessionFacotry = factoryBean.getObject();
 				
 				shardConfigs.add(new ShardConfigurationImpl(shardId, dataSource, sessionFacotry));
