@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.RowBounds;
 import org.makersoft.shards.ShardId;
+import org.makersoft.shards.spring.RuleBean;
 import org.makersoft.shards.strategy.access.ShardAccessStrategy;
 import org.makersoft.shards.strategy.access.impl.ParallelShardAccessStrategy;
 import org.makersoft.shards.strategy.exit.impl.RowCountExitOperation;
@@ -30,7 +31,6 @@ import org.makersoft.shards.strategy.selection.ShardSelectionStrategy;
  * 
  */
 public class VerticalShardStrategyFactory implements ShardStrategyFactory {
-	
 	@Override
 	public ShardStrategy newShardStrategy(List<ShardId> shardIds) {
 		ShardSelectionStrategy pss = this.getShardSelectionStrategy(shardIds);

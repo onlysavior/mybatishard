@@ -23,6 +23,7 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.makersoft.shards.ShardId;
 import org.makersoft.shards.annotation.PrimaryKey;
+import org.makersoft.shards.annotation.Table;
 
 /**
  * 参数处理类
@@ -149,6 +150,18 @@ public abstract class ParameterUtil {
 
 		return null;
 	}
+
+    public static String extractVirtualTableName(Object obj) {
+        if(obj != null) {
+            Class clazz = obj.getClass();
+            Table table = (Table)clazz.getAnnotation(Table.class);
+
+            if(table != null) {
+                return table.value();
+            }
+        }
+        return null;
+    }
 	
 	public static Object generatePrimaryKey(Object object, Serializable id) {
 		if (object != null) {

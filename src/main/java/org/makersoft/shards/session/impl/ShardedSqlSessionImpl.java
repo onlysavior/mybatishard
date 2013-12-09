@@ -221,25 +221,6 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 
 	@Override
 	public <T> T selectOne(final String statement, final Object parameter) {
-		if (statement.endsWith("getById") && parameter != null) {
-			ShardOperation<T> shardOp = new ShardOperation<T>() {
-				public T execute(SqlSession session, ShardId shardId) {
-					return session.<T> selectOne(statement,
-							ParameterUtil.resolve(parameter, shardId));
-				}
-
-				public String getOperationName() {
-					return "selectOne(String statement, Object parameter)";
-				}
-			};
-			Serializable id = this.extractId(parameter);
-
-			Assert.notNull(id, "When get entity by Id, Id can not be null");
-
-			return this.<T> applyGetOperation(shardOp, new ShardResolutionStrategyDataImpl(
-					statement, parameter, id));
-		}
-
 		// 从Resolution策略获取
 		List<Shard> potentialShards = determineShardsViaResolutionStrategyWithReadOperation(
 				statement, parameter);
@@ -403,7 +384,7 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 	/**
 	 * 获取对象主键值
 	 */
-	Serializable extractId(Object obj) {
+	public static Serializable extractId(Object obj) {
 		if (obj != null) {
 			if (obj instanceof String || obj instanceof Number) {
 				// 当参数为Number/String类型时是否可以认为是主键？
@@ -414,6 +395,10 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 		}
 		return null;
 	}
+
+    public static String extractVitualName(Object obj) {
+        return ParameterUtil.extractVirtualTableName(obj);
+    }
 
 	@Override
 	public int delete(String statement) {

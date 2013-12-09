@@ -67,6 +67,8 @@ public class ShardedSqlSessionFactoryBean implements
 	
 	//直接配置ShardConfiguration
 	private List<ShardConfigurationImpl> shardConfigurations;
+
+    private RuleBean ruleBean;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -199,4 +201,7 @@ public class ShardedSqlSessionFactoryBean implements
 		this.shardConfigurations = shardConfigurations;
 	}
 
+    public void setRuleBean(RuleBean ruleBean) {
+        this.ruleBean = ruleBean;
+    }
 }
