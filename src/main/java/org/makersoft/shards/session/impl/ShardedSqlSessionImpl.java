@@ -409,7 +409,7 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 				// 当参数为Number/String类型时是否可以认为是主键？
 				return (Serializable) obj;
 			}
-
+            //FIXME NullPointException
 			return ParameterUtil.extractPrimaryKey(obj);
 		}
 		return null;

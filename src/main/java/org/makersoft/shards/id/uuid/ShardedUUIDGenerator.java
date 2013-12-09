@@ -46,6 +46,7 @@ public class ShardedUUIDGenerator extends UUIDHexGenerator implements
 
 	@Override
 	public ShardId extractShardId(Serializable identifier) {
+        //FIXME NullPointException
 		String hexId = (String) identifier;
 		return new ShardId(Integer.decode("0x" + hexId.substring(0, 4)));
 	}
