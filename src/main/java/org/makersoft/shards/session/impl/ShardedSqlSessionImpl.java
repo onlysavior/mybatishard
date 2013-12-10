@@ -19,6 +19,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.executor.BatchResult;
+import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -28,7 +30,9 @@ import org.makersoft.shards.Shard;
 import org.makersoft.shards.ShardId;
 import org.makersoft.shards.ShardImpl;
 import org.makersoft.shards.ShardOperation;
+import org.makersoft.shards.annotation.MyBatisMapper;
 import org.makersoft.shards.id.IdGenerator;
+import org.makersoft.shards.rule.Rule;
 import org.makersoft.shards.select.impl.AdHocSelectFactoryImpl;
 import org.makersoft.shards.select.impl.ShardSelectImpl;
 import org.makersoft.shards.session.ShardIdResolver;
@@ -39,11 +43,8 @@ import org.makersoft.shards.strategy.exit.impl.ExitOperationsSelectCollector;
 import org.makersoft.shards.strategy.exit.impl.FirstNonNullResultExitStrategy;
 import org.makersoft.shards.strategy.resolution.ShardResolutionStrategyData;
 import org.makersoft.shards.strategy.resolution.ShardResolutionStrategyDataImpl;
-import org.makersoft.shards.utils.Assert;
-import org.makersoft.shards.utils.Lists;
-import org.makersoft.shards.utils.Maps;
-import org.makersoft.shards.utils.ParameterUtil;
-import org.makersoft.shards.utils.Sets;
+import org.makersoft.shards.utils.*;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Feng Kuok
@@ -62,6 +63,8 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 
 	private final ShardStrategy shardStrategy;
 
+    private final List<SqlSessionFactory> sqlSessionFactories;
+
 	// constructor
 	public ShardedSqlSessionImpl(ShardedSqlSessionFactory shardedSqlSessionFactory,
 			ShardStrategy shardStrategy) {
@@ -70,6 +73,7 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 				shardedSqlSessionFactory.getSqlSessionFactoryShardIdMap(), this);
 		this.shardIdsToShards = buildShardIdsToShardsMap();
 		this.shardStrategy = shardStrategy;
+        sqlSessionFactories = shardedSqlSessionFactory.getSqlSessionFactories();
 	}
 
 	static List<Shard> buildShardListFromSqlSessionFactoryShardIdMap(
@@ -230,8 +234,15 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 		return new ShardSelectImpl(potentialShards, new AdHocSelectFactoryImpl(statement,
 				parameter, null, null), shardStrategy.getShardAccessStrategy(),
 				shardStrategy.getShardReduceStrategy()).<T> getSingleResult();
-
 	}
+
+    public static String guessVitualTableName(String statement, Object parameter) {
+        String toHandle = statement.substring(0,statement.lastIndexOf("."));
+        Class clz = ReflectionUtils.forName(toHandle, ShardedSqlSessionImpl.class);
+        MyBatisMapper mapper = (MyBatisMapper) clz.getAnnotation(MyBatisMapper.class);
+
+        return mapper.entityName();
+    }
 
 	@Override
 	public <E> List<E> selectList(String statement) {
@@ -362,21 +373,24 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 	List<Shard> determineShardsViaResolutionStrategyWithWriteOperation(String statement,
 			Object parameter) {
 		Serializable id = this.extractId(parameter);
-		return this.determineShardsObjectsViaResolutionStrategy(statement, parameter, id);
+        String entityName = guessVitualTableName(statement, parameter);
+		return this.determineShardsObjectsViaResolutionStrategy(statement, parameter, id, entityName);
 	}
+
 
 	List<Shard> determineShardsViaResolutionStrategyWithReadOperation(String statement,
 			Object parameter) {
-		return this.determineShardsObjectsViaResolutionStrategy(statement, parameter, null);
+        String entityName = guessVitualTableName(statement, parameter);
+		return this.determineShardsObjectsViaResolutionStrategy(statement, parameter, null, entityName);
 	}
 
 	/**
 	 * 通过statement和parameter确定分区 如果parameter中可以提取出主键ID,首先通过ID去确定唯一分区
 	 */
 	private List<Shard> determineShardsObjectsViaResolutionStrategy(String statement,
-			Object parameter, Serializable id) {
+			Object parameter, Serializable id, String entityName) {
 		ShardResolutionStrategyData srsd = new ShardResolutionStrategyDataImpl(statement,
-				parameter, id);
+				parameter, id, entityName);
 		List<ShardId> shardIds = this.selectShardIdsFromShardResolutionStrategyData(srsd);
 		return shardIdListToShardList(shardIds);
 	}

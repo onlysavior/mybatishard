@@ -16,7 +16,7 @@ import org.makersoft.shards.domain.Role;
 /**
  * Role mapper for test.
  */
-@MyBatisMapper
+//@MyBatisMapper
 public interface RoleMapper {
 
 	int insert(Role role);

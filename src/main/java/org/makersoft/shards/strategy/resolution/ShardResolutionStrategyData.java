@@ -20,4 +20,6 @@ public interface ShardResolutionStrategyData {
 	Object getParameter();
 
 	Serializable getId();
+
+    String getEntityName();
 }

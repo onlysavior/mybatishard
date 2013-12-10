@@ -71,10 +71,10 @@ public class HorizontalShardStrategyFactory implements ShardStrategyFactory {
                                                                                        shardResolutionStrategyData) {
                 Object obj = shardResolutionStrategyData.getParameter();
                 List<ShardId> rtn = new LinkedList<ShardId>();
-                String virtualTableName = extractVitualName(obj);
+                String entityName = shardResolutionStrategyData.getEntityName();
                 Long value = (Long) extractId(obj);
 
-                Rule rule = ruleBean.getRule(virtualTableName);
+                Rule rule = ruleBean.getRule(entityName);
                 String dbIndex = rule.getPhysicsDbIndex(value);
 
                 for(ShardId s : shardIds) {

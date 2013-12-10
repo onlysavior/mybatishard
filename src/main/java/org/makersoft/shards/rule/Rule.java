@@ -19,5 +19,6 @@ public interface Rule {
     String getPhysicsDbIndex(Object value);
     String getPhysicsTableIndex(Object value);
     String getVitualTableName();
+    String getEntityFullName();
 
 }

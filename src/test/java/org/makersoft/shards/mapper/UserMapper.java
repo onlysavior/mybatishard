@@ -16,7 +16,7 @@ import org.makersoft.shards.domain.User;
 /**
  * User mapper for test.
  */
-@MyBatisMapper
+//@MyBatisMapper
 public interface UserMapper {
 	
 	User getById(String id);

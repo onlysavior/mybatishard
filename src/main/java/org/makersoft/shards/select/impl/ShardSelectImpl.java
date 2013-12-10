@@ -105,7 +105,7 @@ public class ShardSelectImpl implements ShardSelect {
 			public Object execute(SqlSession session, ShardId shardId) {
 				
 				return session.selectOne(selectFactory.getStatement(),
-						ParameterUtil.resolve(selectFactory.getParameter(), shardId));
+						selectFactory.getParameter());
 			}
 
 			public String getOperationName() {

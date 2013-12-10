@@ -26,9 +26,11 @@ public class RuleBean implements BeanPostProcessor{
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         Class clazz = bean.getClass();
-        if(clazz.isAssignableFrom(Rule.class)) {
+        org.makersoft.shards.annotation.Rule annotation =
+                (org.makersoft.shards.annotation.Rule)clazz.getAnnotation(org.makersoft.shards.annotation.Rule.class);
+        if(annotation != null) {
             Rule target = (Rule)bean;
-            ruleMap.put(target.getVitualTableName(), target);
+            ruleMap.put(target.getEntityFullName(), target);
         }
 
         return bean;
@@ -38,8 +40,8 @@ public class RuleBean implements BeanPostProcessor{
         return ruleMap;
     }
 
-    public Rule getRule(String virtualTableName) {
-        Rule rule = ruleMap.get(virtualTableName);
+    public Rule getRule(String entityName) {
+        Rule rule = ruleMap.get(entityName);
         if(rule != null) {
             return rule;
         }

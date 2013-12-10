@@ -13,7 +13,7 @@ import java.io.Serializable;
 import org.makersoft.shards.annotation.PrimaryKey;
 import org.makersoft.shards.annotation.ShardEntity;
 
-@ShardEntity
+//@ShardEntity
 public abstract class AbstractShardEntity implements Serializable{
 
 	private static final long serialVersionUID = 5765444163885433060L;

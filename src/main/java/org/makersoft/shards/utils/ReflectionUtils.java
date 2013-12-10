@@ -81,4 +81,28 @@ public class ReflectionUtils {
 
 		return (Class) params[index];
 	}
+
+    public static Class forName(String className, Class caller) {
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        Class rtn = null;
+
+        try {
+            rtn = Class.forName(className,true,tccl);
+            return rtn;
+        } catch (ClassNotFoundException e) {
+        }
+
+        try {
+            rtn = Class.forName(className, true, caller.getClassLoader());
+            return rtn;
+        } catch (ClassNotFoundException e) {
+        }
+
+        try {
+            rtn = Class.forName(className, true, ClassLoader.getSystemClassLoader());
+        } catch (ClassNotFoundException e) {
+        }
+
+        return rtn;
+    }
 }

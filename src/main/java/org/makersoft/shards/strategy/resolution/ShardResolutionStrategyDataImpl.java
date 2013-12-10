@@ -8,6 +8,8 @@
  */
 package org.makersoft.shards.strategy.resolution;
 
+import org.makersoft.shards.rule.Rule;
+
 import java.io.Serializable;
 
 /**
@@ -20,12 +22,21 @@ public class ShardResolutionStrategyDataImpl implements ShardResolutionStrategyD
 	private final Object parameter;
 	
 	private final Serializable id;
-	
+
+    private String entityName;
+
+
 	public ShardResolutionStrategyDataImpl(String statement, Object parameter, Serializable id){
 		this.statement = statement;
 		this.parameter = parameter;
 		this.id = id;
 	}
+
+    public ShardResolutionStrategyDataImpl(String statement, Object parameter, Serializable id,
+                                           String vitualTableName) {
+        this(statement, parameter, id);
+        this.entityName = vitualTableName;
+    }
 
 	@Override
 	public String getStatement() {
@@ -41,7 +52,10 @@ public class ShardResolutionStrategyDataImpl implements ShardResolutionStrategyD
 	public Serializable getId() {
 		return id;
 	}
-	
-	
+
+    @Override
+    public String getEntityName() {
+        return entityName;
+    }
 
 }

@@ -14,7 +14,7 @@ import java.util.Map;
  * Time: ÏÂÎç3:18
  * To change this template use File | Settings | File Templates.
  */
-public abstract class VirtualTable implements Rule{
+public abstract class VirtualTable implements Rule {
     private String defaultDbIndex;
 
     private String dbNamePattern;
@@ -23,18 +23,20 @@ public abstract class VirtualTable implements Rule{
     private Long maxDbNum;
     private Long maxTableNum;
 
+    private String entityName;
+
     private Map<String, Rule> tableRules;
     private Map<String, Rule> dbRules;
 
     public void init() {
-        if(CollectionUtils.isEmpty(dbRules)) {
+        if (CollectionUtils.isEmpty(dbRules)) {
             if (StringUtils.isEmpty(defaultDbIndex)) {
                 throw new IllegalArgumentException("defaultDbIndex must be set when dbRules is empty");
             }
         }
 
-        if(CollectionUtils.isEmpty(tableRules)) {
-            if(StringUtils.hasText(tableNamePattern)) {
+        if (CollectionUtils.isEmpty(tableRules)) {
+            if (StringUtils.hasText(tableNamePattern)) {
                 throw new IllegalArgumentException("tableRules must be set when tableNamePattern is not empty");
             }
         }
@@ -43,7 +45,7 @@ public abstract class VirtualTable implements Rule{
     @Override
     public String getPhysicsDbIndex(Object value) {
         Rule dbRule = getDbRule(getVitualTableName());
-        if(dbRule == null) {
+        if (dbRule == null) {
             return getDefaultDbIndex();
         }
 
@@ -53,7 +55,7 @@ public abstract class VirtualTable implements Rule{
     @Override
     public String getPhysicsTableIndex(Object value) {
         Rule tableRule = getTableRule(getVitualTableName());
-        if(tableRule == null) {
+        if (tableRule == null) {
             return getTableNamePattern();
         }
 
@@ -62,7 +64,7 @@ public abstract class VirtualTable implements Rule{
 
     @Override
     public Rule getDbRule(String vitualTableName) {
-        if(!CollectionUtils.isEmpty(dbRules)) {
+        if (!CollectionUtils.isEmpty(dbRules)) {
             return dbRules.get(vitualTableName);
         }
         return null;
@@ -70,7 +72,7 @@ public abstract class VirtualTable implements Rule{
 
     @Override
     public Rule getTableRule(String vitualTableName) {
-        if(!CollectionUtils.isEmpty(tableRules)) {
+        if (!CollectionUtils.isEmpty(tableRules)) {
             return tableRules.get(vitualTableName);
         }
         return null;
@@ -130,5 +132,14 @@ public abstract class VirtualTable implements Rule{
 
     public void setDbRules(Map<String, Rule> dbRules) {
         this.dbRules = dbRules;
+    }
+
+    @Override
+    public String getEntityFullName() {
+        return entityName;
+    }
+
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
     }
 }

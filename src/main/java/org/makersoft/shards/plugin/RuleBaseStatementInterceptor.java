@@ -6,7 +6,9 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.reflection.MetaObject;
 import org.makersoft.shards.rule.Rule;
+import org.makersoft.shards.rule.impl.VirtualTable;
 import org.makersoft.shards.spring.RuleBean;
+import org.makersoft.shards.utils.RuleUtil;
 
 import static org.apache.ibatis.reflection.SystemMetaObject.*;
 import static org.makersoft.shards.session.impl.ShardedSqlSessionImpl.*;
@@ -46,19 +48,17 @@ public class RuleBaseStatementInterceptor  implements Interceptor {
                     DEFAULT_OBJECT_WRAPPER_FACTORY);
         }
 
-        MappedStatement mappedStatement = (MappedStatement)
-                metaStatementHandler.getValue("delegate.mappedStatement");
         BoundSql boundSql = (BoundSql) metaStatementHandler.getValue("delegate.boundSql");
         Object parameterObject = boundSql.getParameterObject();
 
-        Long value = (Long)extractId(parameterObject);
-        String virtualTableName = extractVitualName(parameterObject);
+        MappedStatement mappedStatement = (MappedStatement)metaStatementHandler.getValue("delegate.mappedStatement");
+        String statement = mappedStatement.getId();
+        String entityName = guessVitualTableName(statement, parameterObject);
 
-        Rule rule = ruleBean.getRule(virtualTableName);
-        String tableIndex = rule.getPhysicsTableIndex(value);
+        VirtualTable rule = (VirtualTable)ruleBean.getRule(entityName);
 
-        //TODO regex to replce the table name
-
+        String sql = RuleUtil.replcePlaceHolder(boundSql.getSql(), rule, parameterObject);
+        metaStatementHandler.setValue("delegate.boundSql.sql", sql);
         return invocation.proceed();
     }
 
