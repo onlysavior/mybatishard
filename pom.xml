@@ -173,6 +173,12 @@
 			<scope>test</scope>
 		</dependency>
 
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
 	</dependencies>
 
 	<licenses>

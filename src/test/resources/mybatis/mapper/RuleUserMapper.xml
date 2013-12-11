@@ -12,6 +12,6 @@
     </select>
 
     <select id="getByIdAndName" resultType="org.makersoft.shards.domain.RuleUser">
-        select * from @{user}@ where id = #{id} and name = #{name}
+        select * from user where id = #{id} and name = #{name}
     </select>
 </mapper>
