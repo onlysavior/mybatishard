@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.binding.BindingException;
+import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -403,8 +404,10 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 			if (obj instanceof String || obj instanceof Number) {
 				// 当参数为Number/String类型时是否可以认为是主键？
 				return (Serializable) obj;
-			}
-            //FIXME NullPointException
+			} else if(obj instanceof Map) {
+                Map paramMap = (Map)obj;
+                return (Serializable)paramMap.get("id");
+            }
 			return ParameterUtil.extractPrimaryKey(obj);
 		}
 		return null;

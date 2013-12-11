@@ -1,10 +1,10 @@
 package org.makersoft.shards.rule;
 
-import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 import org.makersoft.shards.domain.RuleUser;
 import org.makersoft.shards.mapper.RuleUserMapper;
+import org.makersoft.shards.mapper.impl.IbatisRuleUserMapper;
 import org.makersoft.shards.spring.RuleBean;
 import org.makersoft.shards.utils.Assert;
 import org.springframework.context.ApplicationContext;
@@ -62,6 +62,12 @@ public class RuleTest {
         List<RuleUser> userList = mapper.getAll();
     }
 
+    @Test
+    public void testGetByIdAndName() {
+        RuleUserMapper mapper = (IbatisRuleUserMapper)applicationContext.getBean("ruleUserMapper");
+        RuleUser user = mapper.getByIdAndName(1,"bbb");
 
+        Assert.notNull(user);
+    }
 
 }

@@ -39,6 +39,10 @@
 
     <bean id="ruleBean" class="org.makersoft.shards.spring.RuleBean"></bean>
 
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg ref="shardedSqlSessionFactory" />
+    </bean>
+
     <!-- mybatis 配置-->
     <bean id="shardedSqlSessionFactory" class="org.makersoft.shards.spring.ShardedSqlSessionFactoryBean">
         <property name="mapperLocations" value="classpath*:/mybatis/mapper/RuleUserMapper.xml"/>
@@ -70,26 +74,22 @@
         </property>
     </bean>
 
-    <!-- 使用annotation定义事务
-    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
-     -->
-
         <!-- 定义受环境影响易变的变量 -->
         <context:property-placeholder ignore-resource-not-found="true" location="classpath*:/application.properties" />
 
         <!-- Simple连接池 -->
         <bean id="dataSource_1" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
-            <property name="driverClass" value="${jdbc.driver}" />
-            <property name="url" value="${ds1.jdbc.url}" />
-            <property name="username" value="${ds1.jdbc.username}" />
-            <property name="password" value="${ds1.jdbc.password}" />
+            <property name="driverClass" value="com.mysql.jdbc.Driver" />
+            <property name="url" value="jdbc:mysql://localhost:3306/yanye0?useUnicode=true&amp;characterEncoding=utf-8" />
+            <property name="username" value="root" />
+            <property name="password" value="mysql" />
         </bean>
 
         <bean id="dataSource_2" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
-            <property name="driverClass" value="${jdbc.driver}" />
-            <property name="url" value="${ds2.jdbc.url}" />
-            <property name="username" value="${ds2.jdbc.username}" />
-            <property name="password" value="${ds2.jdbc.password}" />
+            <property name="driverClass" value="com.mysql.jdbc.Driver" />
+            <property name="url" value="jdbc:mysql://localhost:3306/yanye1?useUnicode=true&amp;characterEncoding=utf-8" />
+            <property name="username" value="root" />
+            <property name="password" value="mysql" />
         </bean>
 
 
@@ -100,4 +100,7 @@
         <bean id="lazyConnectionDataSource_2" name="name_2" class="org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy">
             <property name="targetDataSource" ref="dataSource_2"/>
         </bean>
+
+     <bean id="ruleUserMapper" class="org.makersoft.shards.mapper.impl.IbatisRuleUserMapper"></bean>
+
 </beans>

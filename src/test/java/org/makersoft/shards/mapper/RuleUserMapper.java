@@ -17,4 +17,6 @@ public interface RuleUserMapper {
     RuleUser getById(long id);
 
     List<RuleUser> getAll();
+
+    RuleUser getByIdAndName(long id, String name);
 }
