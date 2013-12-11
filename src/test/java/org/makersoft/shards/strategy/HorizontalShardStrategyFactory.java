@@ -70,6 +70,11 @@ public class HorizontalShardStrategyFactory implements ShardStrategyFactory {
             public List<ShardId> selectShardIdsFromShardResolutionStrategyData(ShardResolutionStrategyData
                                                                                        shardResolutionStrategyData) {
                 Object obj = shardResolutionStrategyData.getParameter();
+
+                if(obj == null) {
+                    throw new IllegalArgumentException("must set one value to split table");
+                }
+
                 List<ShardId> rtn = new LinkedList<ShardId>();
                 String entityName = shardResolutionStrategyData.getEntityName();
                 Long value = (Long) extractId(obj);

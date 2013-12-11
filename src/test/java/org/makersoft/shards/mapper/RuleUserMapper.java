@@ -3,6 +3,8 @@ package org.makersoft.shards.mapper;
 import org.makersoft.shards.annotation.MyBatisMapper;
 import org.makersoft.shards.domain.RuleUser;
 
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * User: yanye.lj
@@ -13,4 +15,6 @@ import org.makersoft.shards.domain.RuleUser;
 @MyBatisMapper(entityName = "org.makersoft.shards.domain.RuleUser")
 public interface RuleUserMapper {
     RuleUser getById(long id);
+
+    List<RuleUser> getAll();
 }

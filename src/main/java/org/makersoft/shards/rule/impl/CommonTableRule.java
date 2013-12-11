@@ -16,16 +16,19 @@ public class CommonTableRule extends VirtualTable {
 
     @Override
     public String getPhysicsDbIndex(Object value) {
+        if(value == null) {
+            return getDefaultDbIndex(); //TODO maybe no need
+        }
         Long index = (Long)value;
-        //TODO regex to replce the patter;
         return String.valueOf(index);
-        //return getDbNamePattern() + index % getMaxDbNum();
     }
 
     @Override
     public String getPhysicsTableIndex(Object value) {
+        if(value == null) {
+
+        }
         Long index = (Long)value;
-        //TODO regex to replce the patter;
         return getTableNamePattern() + index % getMaxTableNum();
     }
 

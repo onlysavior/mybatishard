@@ -22,6 +22,10 @@ public class RuleUtil {
         //FIXME really need is a way to parse SQL 92
         int begin = sql.indexOf(SPLIT_BEGIN);
         int end = sql.substring(begin).indexOf(SPLIT_END) + begin + 2;
+        if(begin == -1 || end == -1) {
+            return sql;
+        }
+
         String toReplce = sql.substring(begin, end);
         String actualTableName = rule.getPhysicsTableIndex(parameter);
 

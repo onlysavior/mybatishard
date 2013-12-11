@@ -6,4 +6,8 @@
     <select id="getById" parameterType="Long" resultType="org.makersoft.shards.domain.RuleUser">
         select * from @{user}@ where id = #{id}
     </select>
+
+    <select id="getAll" resultType="org.makersoft.shards.domain.RuleUser">
+        select * from @{user}@
+    </select>
 </mapper>

@@ -10,6 +10,7 @@ import org.makersoft.shards.utils.Assert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,5 +55,13 @@ public class RuleTest {
 
         Assert.notNull(user);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetAll() {
+        RuleUserMapper mapper = (RuleUserMapper)applicationContext.getBean(RuleUserMapper.class);
+        List<RuleUser> userList = mapper.getAll();
+    }
+
+
 
 }
