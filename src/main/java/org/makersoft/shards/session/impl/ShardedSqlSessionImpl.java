@@ -322,16 +322,19 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 		SqlSession session = shardIdsToShards.get(shardId).establishSqlSession();
 
 		IdGenerator idGenerator = shardedSqlSessionFactory.getIdGenerator();
-		if (idGenerator != null) {
-			//TODO(fengkuok) 生成主键 DB生成主键是用专有session？
-			Serializable id = idGenerator.generate(session, parameter);
+        Serializable idValue = extractId(parameter);
+        if(idValue == null) {
+            if (idGenerator != null) {
+                //TODO(fengkuok) 生成主键 DB生成主键是用专有session？
+                Serializable id = idGenerator.generate(session, parameter);
 
-			log.debug(String
-					.format("Generating id for object %s ,the type of IdGenerator is %s and generated Id is %s.",
-							parameter.getClass(), idGenerator.getClass(), id));
+                log.debug(String
+                        .format("Generating id for object %s ,the type of IdGenerator is %s and generated Id is %s.",
+                                parameter.getClass(), idGenerator.getClass(), id));
 
-			ParameterUtil.generatePrimaryKey(parameter, id);
-		}
+                ParameterUtil.generatePrimaryKey(parameter, id);
+            }
+        }
 
 		return session.insert(statement, ParameterUtil.resolve(parameter, shardId));
 	}

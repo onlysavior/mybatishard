@@ -3,6 +3,7 @@ package org.makersoft.shards.strategy;
 import org.apache.ibatis.session.RowBounds;
 import org.makersoft.shards.ShardId;
 import org.makersoft.shards.rule.Rule;
+import org.makersoft.shards.session.impl.ShardedSqlSessionImpl;
 import org.makersoft.shards.spring.RuleBean;
 import org.makersoft.shards.strategy.access.ShardAccessStrategy;
 import org.makersoft.shards.strategy.access.impl.ParallelShardAccessStrategy;
@@ -48,8 +49,8 @@ public class HorizontalShardStrategyFactory implements ShardStrategyFactory {
             //without rewrite the sql, it is hard to detemine the actual table name
             @Override
             public ShardId selectShardIdForNewObject(String statement, Object obj) {
-                String virtualTableName = extractVitualName(obj);
-                Long value = (Long) extractId(obj);
+                String virtualTableName = ShardedSqlSessionImpl.guessVitualTableName(statement, obj);
+                Long value = Long.valueOf(String.valueOf(extractId(obj)));
 
                 Rule rule = ruleBean.getRule(virtualTableName);
                 String dbIndex = rule.getPhysicsDbIndex(value);

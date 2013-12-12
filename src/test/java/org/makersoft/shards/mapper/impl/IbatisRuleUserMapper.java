@@ -37,4 +37,18 @@ public class IbatisRuleUserMapper implements RuleUserMapper {
 
         return sqlSessionTemplate.selectOne("org.makersoft.shards.mapper.RuleUserMapper.getByIdAndName", param);
     }
+
+    @Override
+    public RuleUser getByHit(long id, String name) {
+        Map<String, Object> param = new HashMap<String, Object>();
+        param.put("id", id);
+        param.put("name", name);
+
+        return sqlSessionTemplate.selectOne("org.makersoft.shards.mapper.RuleUserMapper.getByHit", param);
+    }
+
+    @Override
+    public void insert(RuleUser user) {
+       sqlSessionTemplate.insert("org.makersoft.shards.mapper.RuleUserMapper.insert", user);
+    }
 }

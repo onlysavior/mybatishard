@@ -70,4 +70,22 @@ public class RuleTest {
         Assert.notNull(user);
     }
 
+    @Test
+    public void testHit() {
+        RuleUserMapper mapper = (IbatisRuleUserMapper)applicationContext.getBean("ruleUserMapper");
+        RuleUser user = mapper.getByHit(1, "bbb");
+
+        Assert.notNull(user);
+    }
+
+    @Test
+    public void testInsert() {
+        RuleUser ruleUser = new RuleUser();
+        ruleUser.setId(4);
+        ruleUser.setName("def");
+
+        RuleUserMapper mapper = (IbatisRuleUserMapper)applicationContext.getBean("ruleUserMapper");
+        mapper.insert(ruleUser);
+    }
+
 }

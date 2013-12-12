@@ -19,4 +19,8 @@ public interface RuleUserMapper {
     List<RuleUser> getAll();
 
     RuleUser getByIdAndName(long id, String name);
+
+    public RuleUser getByHit(long id, String name);
+
+    public void insert(RuleUser user);
 }

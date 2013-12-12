@@ -21,7 +21,7 @@ public class CommonTableRule extends VirtualTable {
         if(value == null) {
             return getDefaultDbIndex(); //TODO maybe no need
         }
-        Long index = (Long)value;
+        Long index = (Long)value % getMaxDbNum();
         return String.valueOf(index);
     }
 

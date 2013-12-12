@@ -14,4 +14,12 @@
     <select id="getByIdAndName" resultType="org.makersoft.shards.domain.RuleUser">
         select * from user where id = #{id} and name = #{name}
     </select>
+
+    <select id="getByHit" resultType="org.makersoft.shards.domain.RuleUser">
+        select * from /**just put id=#{id} without write in sql**/user where name = #{name}
+    </select>
+
+    <insert id="insert" parameterType="org.makersoft.shards.domain.RuleUser">
+        insert into user (id, name) values (#{id}, #{name})
+    </insert>
 </mapper>
