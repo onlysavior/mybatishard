@@ -52,7 +52,7 @@
             <bean class="org.makersoft.shards.strategy.HorizontalShardStrategyFactory"/>
         </property>
         <property name="idGenerator">
-            <bean class="org.makersoft.shards.id.uuid.ShardedUUIDGenerator"/>
+            <ref local="sequanceIdGenertor"></ref>
         </property>
         <property name="ruleBean" ref="ruleBean"></property>
     </bean>
@@ -102,5 +102,17 @@
         </bean>
 
      <bean id="ruleUserMapper" class="org.makersoft.shards.mapper.impl.IbatisRuleUserMapper"></bean>
+
+     <bean id="sequanceIdDao" class="org.makersoft.shards.id.db.SequenceIdDao">
+         <property name="dataSource" ref="dataSource_1"></property>
+         <property name="tableName" value="ids"></property>
+         <property name="nameColumnName" value="name"></property>
+         <property name="valueColumnName" value="id"></property>
+     </bean>
+
+     <bean id="sequanceIdGenertor" class="org.makersoft.shards.id.db.SequenceBolckIdGenerator">
+         <property name="name" value="ruleUserId"></property>
+         <property name="sequenceIdDao" ref="sequanceIdDao"></property>
+     </bean>
 
 </beans>

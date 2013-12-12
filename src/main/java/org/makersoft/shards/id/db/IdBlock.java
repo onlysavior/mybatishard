@@ -8,23 +8,44 @@
  */
 package org.makersoft.shards.id.db;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * 
  */
 public class IdBlock {
-	long nextId;
-	long lastId;
+    private final long min;
+    private final long max;
 
-	public IdBlock(long nextId, long lastId) {
-		this.nextId = nextId;
-		this.lastId = lastId;
-	}
+    private final AtomicLong value;
 
-	public long getNextId() {
-		return nextId;
-	}
+    private volatile boolean over = false;
 
-	public long getLastId() {
-		return lastId;
-	}
+    public IdBlock(long min, long max) {
+        this.min = min;
+        this.max = max;
+        this.value = new AtomicLong(min);
+    }
+
+    public long getAndIncrement() {
+        long currentValue = value.getAndIncrement();
+        if (currentValue > max) {
+            over = true;
+            return -1;
+        }
+
+        return currentValue;
+    }
+
+    public long getMin() {
+        return min;
+    }
+
+    public long getMax() {
+        return max;
+    }
+
+    public boolean isOver() {
+        return over;
+    }
 }

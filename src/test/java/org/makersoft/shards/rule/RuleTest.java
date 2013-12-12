@@ -3,13 +3,17 @@ package org.makersoft.shards.rule;
 import org.junit.Before;
 import org.junit.Test;
 import org.makersoft.shards.domain.RuleUser;
+import org.makersoft.shards.id.db.SequenceBolckIdGenerator;
+import org.makersoft.shards.id.db.SequenceIdDao;
 import org.makersoft.shards.mapper.RuleUserMapper;
 import org.makersoft.shards.mapper.impl.IbatisRuleUserMapper;
 import org.makersoft.shards.spring.RuleBean;
 import org.makersoft.shards.utils.Assert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
+import java.sql.Driver;
 import java.util.List;
 import java.util.Map;
 
@@ -88,4 +92,15 @@ public class RuleTest {
         mapper.insert(ruleUser);
     }
 
+    @Test
+    public void testSequanceId() {
+        SequenceBolckIdGenerator sequenceBolckIdGenerator = (SequenceBolckIdGenerator)applicationContext.getBean("sequanceIdGenertor");
+        Long id = (Long)sequenceBolckIdGenerator.generate(null, null);
+        RuleUser ruleUser = new RuleUser();
+        ruleUser.setName("def");
+        ruleUser.setId(id.intValue());
+
+        RuleUserMapper mapper = (IbatisRuleUserMapper)applicationContext.getBean("ruleUserMapper");
+        mapper.insert(ruleUser);
+    }
 }
