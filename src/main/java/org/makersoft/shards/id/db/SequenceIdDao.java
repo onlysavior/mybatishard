@@ -24,8 +24,7 @@ public class SequenceIdDao {
     private Integer maxTryTime = DEFAULT_MAX_TRY;
     private Long step = DEFAULT_STEP;
 
-    public IdBlock nextIdBlock(String name) throws SQLException{
-
+    public IdBlock nextIdBlock(String name) throws SQLException {
 
         Connection connection;
         PreparedStatement statement;
@@ -33,7 +32,7 @@ public class SequenceIdDao {
 
         long oldValue;
         long newValue;
-        for(int index = 0; index < maxTryTime; index++) {
+        for (int index = 0; index < maxTryTime; index++) {
             connection = dataSource.getConnection();
             connection.setAutoCommit(true);
             statement = connection.prepareStatement(getSelectSql());
@@ -44,13 +43,13 @@ public class SequenceIdDao {
 
             oldValue = rs.getLong(1);
 
-            if(oldValue < 0) {
-                throw new IllegalStateException("Sequance value invild, column name is "+name);
+            if (oldValue < 0) {
+                throw new IllegalStateException("Sequance value invild, column name is " + name);
             }
 
             newValue = oldValue + DEFAULT_STEP;
 
-            if(newValue > Long.MAX_VALUE - 10000L) {
+            if (newValue > Long.MAX_VALUE - 10000L) {
                 throw new IllegalStateException("Sequance value overflow, column name is " + name);
             }
 
@@ -67,11 +66,9 @@ public class SequenceIdDao {
             statement.setLong(1, newValue);
             statement.setString(2, name);
 
-            if(statement.executeUpdate() <= 0) {
+            if (statement.executeUpdate() <= 0) {
                 continue;
             }
-
-            connection.commit();
 
             statement.close();
             statement = null;
@@ -81,7 +78,7 @@ public class SequenceIdDao {
             return new IdBlock(oldValue + 1, newValue);
         }
 
-        throw new AssertionError("unreachable code, sequanceId retry greater then "+maxTryTime);
+        throw new AssertionError("unreachable code, sequanceId retry greater then " + maxTryTime);
     }
 
     private String getSelectSql() {

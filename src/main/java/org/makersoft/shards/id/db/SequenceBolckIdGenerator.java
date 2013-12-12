@@ -43,6 +43,8 @@ public class SequenceBolckIdGenerator implements IdGenerator {
                 lock.lock();
                 currentIdBlock = sequenceIdDao.nextIdBlock(name);
                 rtn = currentIdBlock.getAndIncrement();
+
+                return rtn;
             } catch (Exception ignored) {
                 System.out.println(ignored);
             } finally {
