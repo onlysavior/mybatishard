@@ -9,6 +9,7 @@
 package org.makersoft.shards.session.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.makersoft.shards.ShardedConfiguration;
@@ -26,14 +27,21 @@ import org.makersoft.shards.strategy.ShardStrategyFactory;
  * @see SqlSessionFactoryBuilder
  */
 public class ShardedSqlSessionFactoryBuilder {
-	
-	public ShardedSqlSessionFactory build(List<ShardConfiguration> shardConfigs, ShardStrategyFactory shardStrategyFactory) {
-		ShardedConfiguration configuration = new ShardedConfiguration(shardConfigs, shardStrategyFactory, null);
+
+    @Deprecated
+	public ShardedSqlSessionFactory build(List<ShardConfiguration> shardConfigs,
+                                          ShardStrategyFactory shardStrategyFactory) {
+		ShardedConfiguration configuration = new ShardedConfiguration(shardConfigs, shardStrategyFactory, null,null,null);
 		return configuration.buildShardedSessionFactory();
 	}
 
-	public ShardedSqlSessionFactory build(List<ShardConfiguration> shardConfigs, ShardStrategyFactory shardStrategyFactory, IdGenerator idGenerator) {
-		ShardedConfiguration configuration = new ShardedConfiguration(shardConfigs, shardStrategyFactory, idGenerator);
+	public ShardedSqlSessionFactory build(List<ShardConfiguration> shardConfigs,
+                                          ShardStrategyFactory shardStrategyFactory,
+                                          IdGenerator idGenerator,
+                                          Set<Integer> read,
+                                          Set<Integer> write) {
+		ShardedConfiguration configuration = new ShardedConfiguration(shardConfigs,
+                shardStrategyFactory, idGenerator, read, write);
 		return configuration.buildShardedSessionFactory();
 	}
 

@@ -1,6 +1,7 @@
 package org.makersoft.shards.strategy;
 
 import org.apache.ibatis.session.RowBounds;
+import org.makersoft.shards.Shard;
 import org.makersoft.shards.ShardId;
 import org.makersoft.shards.rule.Rule;
 import org.makersoft.shards.session.impl.ShardedSqlSessionImpl;
@@ -35,9 +36,9 @@ public class HorizontalShardStrategyFactory implements ShardStrategyFactory {
     }
 
     @Override
-    public ShardStrategy newShardStrategy(List<ShardId> shardIds) {
-        ShardSelectionStrategy pss = this.getShardSelectionStrategy(shardIds);
-        ShardResolutionStrategy prs = this.getShardResolutionStrategy(shardIds);
+    public ShardStrategy newShardStrategy(List<ShardId> shardIds, List<ShardId> write, List<ShardId> read) {
+        ShardSelectionStrategy pss = this.getShardSelectionStrategy(write);
+        ShardResolutionStrategy prs = this.getShardResolutionStrategy(read);
         ShardAccessStrategy pas = this.getShardAccessStrategy();
         ShardReduceStrategy srs = this.getShardReduceStrategy();
         return new ShardStrategyImpl(pss, prs, pas, srs);
@@ -82,6 +83,7 @@ public class HorizontalShardStrategyFactory implements ShardStrategyFactory {
 
                 Rule rule = ruleBean.getRule(entityName);
                 String dbIndex = rule.getPhysicsDbIndex(value);
+
 
                 for(ShardId s : shardIds) {
                     if(s.getId() == Integer.valueOf(dbIndex)) {

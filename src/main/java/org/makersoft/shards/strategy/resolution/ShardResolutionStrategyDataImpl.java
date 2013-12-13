@@ -8,9 +8,8 @@
  */
 package org.makersoft.shards.strategy.resolution;
 
-import org.makersoft.shards.rule.Rule;
-
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * 
@@ -30,6 +29,7 @@ public class ShardResolutionStrategyDataImpl implements ShardResolutionStrategyD
 		this.statement = statement;
 		this.parameter = parameter;
 		this.id = id;
+
 	}
 
     public ShardResolutionStrategyDataImpl(String statement, Object parameter, Serializable id,

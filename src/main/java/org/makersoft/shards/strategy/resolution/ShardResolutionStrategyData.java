@@ -9,6 +9,7 @@
 package org.makersoft.shards.strategy.resolution;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * 
@@ -22,4 +23,5 @@ public interface ShardResolutionStrategyData {
 	Serializable getId();
 
     String getEntityName();
+
 }

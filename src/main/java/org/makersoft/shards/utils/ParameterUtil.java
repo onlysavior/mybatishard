@@ -51,8 +51,6 @@ public abstract class ParameterUtil {
 				enhancer.setSuperclass(HashMap.class);
 				enhancer.setCallback(new MethodInterceptor() {
 
-					private final String prefix = shardId.getPrefix();
-					private final String suffix = shardId.getSuffix();
 					private final Object parameter = obj;
 
 					@Override
@@ -65,13 +63,7 @@ public abstract class ParameterUtil {
 						} 
 							
 						if (args.length > 0 && "get".equals(method.getName())) {
-							if ("prefix".equals(args[0])) {
-								return prefix;
-							} else if ("suffix".equals(args[0])) {
-								return suffix;
-							} else {
-								return parameter;
-							}
+                            return parameter;
 						}
 
 						return proxy.invokeSuper(object, args);
@@ -81,28 +73,20 @@ public abstract class ParameterUtil {
 				return (HashMap) enhancer.create();
 			} else if (obj instanceof Map) {
 				Map parameter = (Map) obj;
-				parameter.put("prefix", shardId.getPrefix());
-				parameter.put("suffix", shardId.getSuffix());
 
 				return parameter;
 			} else if (obj instanceof List) {
 				Map<String, Object> parameter = Maps.newHashMap();
 				parameter.put("list", obj);
-				parameter.put("prefix", shardId.getPrefix());
-				parameter.put("suffix", shardId.getSuffix());
 
 				return parameter;
 			} else if (obj != null && obj.getClass().isArray()) {
 				Map<String, Object> parameter = Maps.newHashMap();
 				parameter.put("array", obj);
-				parameter.put("prefix", shardId.getPrefix());
-				parameter.put("suffix", shardId.getSuffix());
 
 				return parameter;
 			} else if (obj instanceof Object) {
 				Map<String, Object> parameter = PropertyUtils.describe(obj);
-				parameter.put("prefix", shardId.getPrefix());
-				parameter.put("suffix", shardId.getSuffix());
 
 				return parameter;
 			} else if (obj != null) {

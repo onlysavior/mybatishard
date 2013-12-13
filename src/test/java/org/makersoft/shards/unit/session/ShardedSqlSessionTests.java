@@ -80,7 +80,7 @@ public class ShardedSqlSessionTests extends BaseTest {
 				new ShardStrategyFactory() {
 
 					@Override
-					public ShardStrategy newShardStrategy(List<ShardId> shardIds) {
+					public ShardStrategy newShardStrategy(List<ShardId> shardIds,List<ShardId> write, List<ShardId> read) {
 						ShardSelectionStrategy pss = new ShardSelectionStrategy() {
 
 							@Override

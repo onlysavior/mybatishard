@@ -18,6 +18,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.type.TypeHandler;
 import org.makersoft.shards.ShardId;
 import org.makersoft.shards.cfg.ShardConfiguration;
+import org.makersoft.shards.datasource.ShardAtomDataSource;
 import org.makersoft.shards.id.IdGenerator;
 import org.makersoft.shards.strategy.ShardStrategyFactory;
 import org.makersoft.shards.utils.Lists;
@@ -32,6 +33,8 @@ public class ShardConfigurationImpl implements ShardConfiguration{
 	private Integer shardId;
 	
 	private List<ShardId> shardIds;
+
+    private String type = null;
 	
 	private DataSource dataSource;
 	
@@ -61,10 +64,6 @@ public class ShardConfigurationImpl implements ShardConfiguration{
 	
 	private IdGenerator idGenerator; 
 	
-	//constructor
-	public ShardConfigurationImpl(){
-	}
-	
 	/**
 	 * 物理分区和逻辑分区一对一
 	 * @param shardId	分区Id
@@ -87,7 +86,11 @@ public class ShardConfigurationImpl implements ShardConfiguration{
 		return shardId;
 	}
 
-	@Override
+    public String getType() {
+        return type;
+    }
+
+    @Override
 	public List<ShardId> getShardIds() {
 		return shardIds;
 	}

@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.makersoft.shards.cfg.ShardConfiguration;
+import org.makersoft.shards.datasource.ShardAtomDataSource;
 import org.makersoft.shards.id.IdGenerator;
 import org.makersoft.shards.session.ShardedSqlSessionFactory;
 import org.makersoft.shards.session.impl.ShardedSqlSessionFactoryImpl;
@@ -49,20 +50,28 @@ public class ShardedConfiguration {
 	// 物理分区ids --> 虚拟分区ids集合 映射
 	private final Map<Integer, Set<ShardId>> shardToVirtualShardIdMap;
 
-	public ShardedConfiguration(List<ShardConfiguration> shardConfigs,
-			ShardStrategyFactory shardStrategyFactory, IdGenerator idGenerator) {
+    private Set<Integer> readDataSources;
+    private Set<Integer> writeDataSources;
 
-		this(shardConfigs, shardStrategyFactory, new HashMap<Integer, Integer>(), idGenerator);
+	public ShardedConfiguration(List<ShardConfiguration> shardConfigs,
+			ShardStrategyFactory shardStrategyFactory, IdGenerator idGenerator,
+            Set<Integer> readDataSources, Set<Integer> writeDataSources) {
+
+		this(shardConfigs, shardStrategyFactory, new HashMap<Integer, Integer>(), idGenerator,
+                readDataSources, writeDataSources);
 	}
 
 	public ShardedConfiguration(List<ShardConfiguration> shardConfigs,
 			ShardStrategyFactory shardStrategyFactory,
-			Map<Integer, Integer> virtualShardToShardMap, IdGenerator idGenerator) {
+			Map<Integer, Integer> virtualShardToShardMap, IdGenerator idGenerator,
+            Set<Integer> readDataSources, Set<Integer> writeDataSources) {
 
 		Assert.notNull(shardConfigs);
 		Assert.notNull(shardStrategyFactory);
 		Assert.notNull(virtualShardToShardMap);
 
+        this.readDataSources = readDataSources;
+        this.writeDataSources = writeDataSources;
 		this.shardConfigs = shardConfigs;
 		this.shardStrategyFactory = shardStrategyFactory;
 		this.virtualShardToShardMap = virtualShardToShardMap;
@@ -118,7 +127,7 @@ public class ShardedConfiguration {
 		// prototypeConfiguration.getProperties(),
 		// true);
 		return new ShardedSqlSessionFactoryImpl(sqlSessionFactories, shardStrategyFactory,
-				idGenerator);
+				idGenerator, readDataSources, writeDataSources);
 	}
 
 }

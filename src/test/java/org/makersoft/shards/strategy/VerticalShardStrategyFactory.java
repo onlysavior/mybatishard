@@ -32,7 +32,7 @@ import org.makersoft.shards.strategy.selection.ShardSelectionStrategy;
  */
 public class VerticalShardStrategyFactory implements ShardStrategyFactory {
 	@Override
-	public ShardStrategy newShardStrategy(List<ShardId> shardIds) {
+	public ShardStrategy newShardStrategy(List<ShardId> shardIds,List<ShardId> write, List<ShardId> read) {
 		ShardSelectionStrategy pss = this.getShardSelectionStrategy(shardIds);
 		ShardResolutionStrategy prs = this.getShardResolutionStrategy(shardIds);
 		ShardAccessStrategy pas = this.getShardAccessStrategy();

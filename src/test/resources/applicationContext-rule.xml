@@ -21,8 +21,8 @@
     <bean id="dsMap" class="java.util.HashMap">
         <constructor-arg>
             <map>
-                <entry key="0" value-ref="lazyConnectionDataSource_1" />
-                <entry key="1" value-ref="lazyConnectionDataSource_2" />
+                <entry key="0" value-ref="dataSource_1" />
+                <entry key="1" value-ref="dataSource_2" />
             </map>
         </constructor-arg>
     </bean>
@@ -78,18 +78,20 @@
         <context:property-placeholder ignore-resource-not-found="true" location="classpath*:/application.properties" />
 
         <!-- Simple连接池 -->
-        <bean id="dataSource_1" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <bean id="dataSource_1" class="org.makersoft.shards.datasource.ShardAtomDataSource">
             <property name="driverClass" value="com.mysql.jdbc.Driver" />
             <property name="url" value="jdbc:mysql://localhost:3306/yanye0?useUnicode=true&amp;characterEncoding=utf-8" />
             <property name="username" value="root" />
             <property name="password" value="mysql" />
+            <property name="type" value="RW"></property>
         </bean>
 
-        <bean id="dataSource_2" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <bean id="dataSource_2" class="org.makersoft.shards.datasource.ShardAtomDataSource">
             <property name="driverClass" value="com.mysql.jdbc.Driver" />
             <property name="url" value="jdbc:mysql://localhost:3306/yanye1?useUnicode=true&amp;characterEncoding=utf-8" />
             <property name="username" value="root" />
             <property name="password" value="mysql" />
+            <property name="type" value="R"></property>
         </bean>
 
 
@@ -114,5 +116,7 @@
          <property name="name" value="ruleUserId"></property>
          <property name="sequenceIdDao" ref="sequanceIdDao"></property>
      </bean>
+
+    <bean id="feature" class="org.makersoft.shards.feature.Feature"></bean>
 
 </beans>

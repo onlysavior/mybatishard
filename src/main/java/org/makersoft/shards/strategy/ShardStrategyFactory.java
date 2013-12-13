@@ -10,6 +10,7 @@ package org.makersoft.shards.strategy;
 
 import java.util.List;
 
+import org.makersoft.shards.Shard;
 import org.makersoft.shards.ShardId;
 
 /**
@@ -17,5 +18,5 @@ import org.makersoft.shards.ShardId;
  */
 public interface ShardStrategyFactory {
 
-	ShardStrategy newShardStrategy(List<ShardId> shardIds);
+	ShardStrategy newShardStrategy(List<ShardId> shardIds, List<ShardId> writeShardIds, List<ShardId> readShardIds);
 }

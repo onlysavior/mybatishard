@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.makersoft.shards.ShardId;
+import org.makersoft.shards.datasource.ShardAtomDataSource;
 import org.makersoft.shards.id.IdGenerator;
 import org.makersoft.shards.strategy.ShardStrategyFactory;
 
@@ -32,5 +33,8 @@ public interface ShardedSqlSessionFactory extends SqlSessionFactory {
 	IdGenerator getIdGenerator();
 
 	Map<SqlSessionFactory, Set<ShardId>> getSqlSessionFactoryShardIdMap();
+
+     List<ShardId> getRead();
+     List<ShardId> getWrite();
 
 }

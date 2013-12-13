@@ -40,8 +40,6 @@ public class ParameterUtilTests {
 	@Before
 	public void setup() throws Exception {
 		shardId = new ShardId(0);
-		shardId.setPrefix("prefix");
-		shardId.setSuffix("suffix");
 	}
 
 	@Test

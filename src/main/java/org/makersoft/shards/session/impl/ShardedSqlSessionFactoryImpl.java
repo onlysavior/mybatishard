@@ -21,8 +21,10 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.TransactionIsolationLevel;
+import org.makersoft.shards.Shard;
 import org.makersoft.shards.ShardId;
 import org.makersoft.shards.cfg.MyBatisConfigurationsWrapper;
+import org.makersoft.shards.datasource.ShardAtomDataSource;
 import org.makersoft.shards.id.IdGenerator;
 import org.makersoft.shards.session.ShardedSqlSession;
 import org.makersoft.shards.session.ShardedSqlSessionFactory;
@@ -35,165 +37,200 @@ import org.makersoft.shards.utils.Maps;
 import org.makersoft.shards.utils.Sets;
 
 /**
- * 
+ *
  */
 public class ShardedSqlSessionFactoryImpl implements ShardedSqlSessionFactory {
-	
-	private final Log log = LogFactory.getLog(getClass());
-	
-	// the id of the control shard
-	private static final int CONTROL_SHARD_ID = 0;
 
-	private final List<SqlSessionFactory> sqlSessionFactories;
-	private final List<ShardId> shardIds;
-	
-	// map of SessionFactories used by this ShardedSessionFactory (might be a subset of all SessionFactories)
-	private final Map<SqlSessionFactory, Set<ShardId>> sqlSessionFactoryShardIdMap;
+    private final Log log = LogFactory.getLog(getClass());
 
-	// map of all existing SessionFactories, used when creating a new ShardedSessionFactory for some subset of shards
-	@SuppressWarnings("unused")
-	private final Map<SqlSessionFactory, Set<ShardId>> fullSqlSessionFactoryShardIdMap;
-	  
-	private final ShardStrategy shardStrategy;
-	
-	private final IdGenerator idGenerator;
-	
-	// Reference to the SessionFactory we use for functionality that expects
-	// data to live in a single, well-known location (like distributed sequences)
-	private final SqlSessionFactory controlSqlSessionFactory;
-	
-	private final ShardedSqlSession singleShardedSqlSession;
-	
-	private final Configuration configurationsWrapper;
+    // the id of the control shard
+    private static final int CONTROL_SHARD_ID = 0;
 
-	public ShardedSqlSessionFactoryImpl(
-			Map<SqlSessionFactory, Set<ShardId>> sessionFactoryShardIdMap,
-			ShardStrategyFactory shardStrategyFactory, IdGenerator idGenerator) {
+    private final List<SqlSessionFactory> sqlSessionFactories;
+    private final List<ShardId> shardIds;
 
-		this.sqlSessionFactories = Lists.newArrayList(sessionFactoryShardIdMap.keySet());
-		this.sqlSessionFactoryShardIdMap = Maps.newHashMap();
-		this.fullSqlSessionFactoryShardIdMap = sessionFactoryShardIdMap;
-		this.shardIds = Lists.newArrayList(Iterables.concat(sessionFactoryShardIdMap.values()));
+    // map of SessionFactories used by this ShardedSessionFactory (might be a subset of all SessionFactories)
+    private final Map<SqlSessionFactory, Set<ShardId>> sqlSessionFactoryShardIdMap;
 
-		Set<ShardId> uniqueShardIds = Sets.newHashSet();
-		SqlSessionFactory controlSqlSessionFactoryToSet = null;
-		for (Map.Entry<SqlSessionFactory, Set<ShardId>> entry : sessionFactoryShardIdMap.entrySet()) {
-			SqlSessionFactory implementor = entry.getKey();
-			Assert.notNull(implementor);
-			
-			Set<ShardId> shardIdSet = entry.getValue();
-			Assert.notNull(shardIdSet);
-			Assert.notNull(!shardIdSet.isEmpty());
-			for (ShardId shardId : shardIdSet) {
-				// TODO(tomislav): we should change it so we specify control shard in configuration
-		        if (shardId.getId() == CONTROL_SHARD_ID) {
-		        	controlSqlSessionFactoryToSet = implementor;
-		        }
-		        if(!uniqueShardIds.add(shardId)) {
-		        	final String msg = String.format("Cannot have more than one shard with shard id %d.", shardId.getId());
-		        	log.error(msg);
-		        	throw new RuntimeException(msg);
-		        }
-		        if (shardIds.contains(shardId)) {
-		        	if (!this.sqlSessionFactoryShardIdMap.containsKey(implementor)) {
-		        		this.sqlSessionFactoryShardIdMap.put(implementor, Sets.<ShardId>newHashSet());
-		        	}
-		        	this.sqlSessionFactoryShardIdMap.get(implementor).add(shardId);
-		        }
-			}
-	    }
-		
-		this.controlSqlSessionFactory = controlSqlSessionFactoryToSet;
-		
-		this.shardStrategy = shardStrategyFactory.newShardStrategy(shardIds);
-		
-		this.idGenerator = idGenerator;
-		
-		this.singleShardedSqlSession = new ShardedSqlSessionImpl(this, shardStrategy);
-		
-		this.configurationsWrapper = new MyBatisConfigurationsWrapper(getAnyFactory().getConfiguration(), this.getSqlSessionFactories());
-		
-	}
+    // map of all existing SessionFactories, used when creating a new ShardedSessionFactory for some subset of shards
+    @SuppressWarnings("unused")
+    private final Map<SqlSessionFactory, Set<ShardId>> fullSqlSessionFactoryShardIdMap;
 
-	private SqlSessionFactory getAnyFactory() {
-		return sqlSessionFactories.get(0);
-	}
-	  
-	@Override
-	public List<SqlSessionFactory> getSqlSessionFactories() {
-		return Collections.<SqlSessionFactory> unmodifiableList(sqlSessionFactories);
-	}
+    private final ShardStrategy shardStrategy;
 
-	@Override
-	public ShardedSqlSessionFactory getSqlSessionFactory(
-			List<ShardId> shardIds, ShardStrategyFactory shardStrategyFactory) {
-		throw new UnsupportedOperationException();
-	}
+    private final IdGenerator idGenerator;
 
-	public SqlSession openControlSession() {
-		Assert.notNull(controlSqlSessionFactory);
-		
-		SqlSession session = controlSqlSessionFactory.openSession();
-	    return  session;
-	}
-	
-	@Override
-	public ShardedSqlSession openSession() {
-		return this.openSession(false);
-	}
+    // Reference to the SessionFactory we use for functionality that expects
+    // data to live in a single, well-known location (like distributed sequences)
+    private final SqlSessionFactory controlSqlSessionFactory;
 
-	@Override
-	public ShardedSqlSession openSession(boolean autoCommit) {
-		return this.openSession(ExecutorType.SIMPLE, autoCommit);
-	}
+    private final ShardedSqlSession singleShardedSqlSession;
 
-	@Override
-	public ShardedSqlSession openSession(ExecutorType execType) {
-		return this.openSession(execType, false);
-	}
-	
-	@Override
-	public ShardedSqlSession openSession(ExecutorType execType, boolean autoCommit) {
-		return singleShardedSqlSession;
-	}
-	
-	@Override
-	public ShardedSqlSession openSession(TransactionIsolationLevel level) {
-		return this.openSession(ExecutorType.SIMPLE, level);
-	}
-	
-	@Override
-	public ShardedSqlSession openSession(ExecutorType execType,
-			TransactionIsolationLevel level) {
-		return singleShardedSqlSession;
-	}
-	
-	@Override
-	public ShardedSqlSession openSession(Connection connection) {
-		throw new UnsupportedOperationException(
-				"Cannot open a sharded session with a user provided connection.");
-	}
+    private final Configuration configurationsWrapper;
 
-	@Override
-	public ShardedSqlSession openSession(ExecutorType execType,
-			Connection connection) {
-		throw new UnsupportedOperationException(
-				"Cannot open a sharded session with a user provided connection.");
-	}
+    private final Set<Integer> readDataSources;
+    private final Set<Integer> writeDataSource;
 
-	@Override
-	public Configuration getConfiguration() {
-		return configurationsWrapper;
-	}
-	
-	@Override
-	public IdGenerator getIdGenerator() {
-		return idGenerator;
-	}
+    private final List<ShardId> read = Lists.newLinkedList();
+    private final List<ShardId> write = Lists.newLinkedList();
 
-	@Override
-	public Map<SqlSessionFactory, Set<ShardId>> getSqlSessionFactoryShardIdMap() {
-		return sqlSessionFactoryShardIdMap;
-	}
-	
+    public ShardedSqlSessionFactoryImpl(
+            Map<SqlSessionFactory, Set<ShardId>> sessionFactoryShardIdMap,
+            ShardStrategyFactory shardStrategyFactory, IdGenerator idGenerator,
+            Set<Integer> readDataSources, Set<Integer> writeDataSource) {
+
+        this.sqlSessionFactories = Lists.newArrayList(sessionFactoryShardIdMap.keySet());
+        this.sqlSessionFactoryShardIdMap = Maps.newHashMap();
+        this.fullSqlSessionFactoryShardIdMap = sessionFactoryShardIdMap;
+        this.shardIds = Lists.newArrayList(Iterables.concat(sessionFactoryShardIdMap.values()));
+        this.readDataSources = Sets.newHashSet(readDataSources);
+        this.writeDataSource = Sets.newHashSet(writeDataSource);
+
+        Set<ShardId> uniqueShardIds = Sets.newHashSet();
+        SqlSessionFactory controlSqlSessionFactoryToSet = null;
+        for (Map.Entry<SqlSessionFactory, Set<ShardId>> entry : sessionFactoryShardIdMap.entrySet()) {
+            SqlSessionFactory implementor = entry.getKey();
+            Assert.notNull(implementor);
+
+            Set<ShardId> shardIdSet = entry.getValue();
+            Assert.notNull(shardIdSet);
+            Assert.notNull(!shardIdSet.isEmpty());
+            for (ShardId shardId : shardIdSet) {
+                // TODO(tomislav): we should change it so we specify control shard in configuration
+                if (shardId.getId() == CONTROL_SHARD_ID) {
+                    controlSqlSessionFactoryToSet = implementor;
+                }
+                if (!uniqueShardIds.add(shardId)) {
+                    final String msg = String.format("Cannot have more than one shard with shard id %d.", shardId.getId());
+                    log.error(msg);
+                    throw new RuntimeException(msg);
+                }
+                if (shardIds.contains(shardId)) {
+                    if (!this.sqlSessionFactoryShardIdMap.containsKey(implementor)) {
+                        this.sqlSessionFactoryShardIdMap.put(implementor, Sets.<ShardId>newHashSet());
+                    }
+                    this.sqlSessionFactoryShardIdMap.get(implementor).add(shardId);
+                }
+            }
+        }
+
+        this.controlSqlSessionFactory = controlSqlSessionFactoryToSet;
+
+        for (ShardId s : shardIds) {
+            Integer id = s.getId();
+            if(readDataSources.contains(id)) {
+                read.add(s);
+            }
+
+            if(writeDataSource.contains(id)) {
+                write.add(s);
+            }
+        }
+
+        this.shardStrategy = shardStrategyFactory.newShardStrategy(shardIds,write,read);
+
+        this.idGenerator = idGenerator;
+
+        this.singleShardedSqlSession = new ShardedSqlSessionImpl(this, shardStrategy);
+
+        this.configurationsWrapper = new MyBatisConfigurationsWrapper(getAnyFactory().getConfiguration(), this.getSqlSessionFactories());
+
+    }
+
+    private SqlSessionFactory getAnyFactory() {
+        return sqlSessionFactories.get(0);
+    }
+
+    @Override
+    public List<SqlSessionFactory> getSqlSessionFactories() {
+        return Collections.<SqlSessionFactory>unmodifiableList(sqlSessionFactories);
+    }
+
+    @Override
+    public ShardedSqlSessionFactory getSqlSessionFactory(
+            List<ShardId> shardIds, ShardStrategyFactory shardStrategyFactory) {
+        throw new UnsupportedOperationException();
+    }
+
+    public SqlSession openControlSession() {
+        Assert.notNull(controlSqlSessionFactory);
+
+        SqlSession session = controlSqlSessionFactory.openSession();
+        return session;
+    }
+
+    @Override
+    public ShardedSqlSession openSession() {
+        return this.openSession(false);
+    }
+
+    @Override
+    public ShardedSqlSession openSession(boolean autoCommit) {
+        return this.openSession(ExecutorType.SIMPLE, autoCommit);
+    }
+
+    @Override
+    public ShardedSqlSession openSession(ExecutorType execType) {
+        return this.openSession(execType, false);
+    }
+
+    @Override
+    public ShardedSqlSession openSession(ExecutorType execType, boolean autoCommit) {
+        return singleShardedSqlSession;
+    }
+
+    @Override
+    public ShardedSqlSession openSession(TransactionIsolationLevel level) {
+        return this.openSession(ExecutorType.SIMPLE, level);
+    }
+
+    @Override
+    public ShardedSqlSession openSession(ExecutorType execType,
+                                         TransactionIsolationLevel level) {
+        return singleShardedSqlSession;
+    }
+
+    @Override
+    public ShardedSqlSession openSession(Connection connection) {
+        throw new UnsupportedOperationException(
+                "Cannot open a sharded session with a user provided connection.");
+    }
+
+    @Override
+    public ShardedSqlSession openSession(ExecutorType execType,
+                                         Connection connection) {
+        throw new UnsupportedOperationException(
+                "Cannot open a sharded session with a user provided connection.");
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configurationsWrapper;
+    }
+
+    @Override
+    public IdGenerator getIdGenerator() {
+        return idGenerator;
+    }
+
+    @Override
+    public Map<SqlSessionFactory, Set<ShardId>> getSqlSessionFactoryShardIdMap() {
+        return sqlSessionFactoryShardIdMap;
+    }
+
+    public Set<Integer> getReadDataSources() {
+        return this.readDataSources;
+    }
+
+    public Set<Integer> getWriteDataSources() {
+        return this.writeDataSource;
+    }
+
+    public List<ShardId> getRead() {
+        return read;
+    }
+
+    public List<ShardId> getWrite() {
+        return write;
+    }
 }

@@ -10,10 +10,7 @@ package org.makersoft.shards.session.impl;
 
 import java.io.Serializable;
 import java.sql.Connection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -186,8 +183,8 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 		// if(lockedShardId != null) {
 		// return lockedShardId;
 		// }
-		ShardId shardId = shardStrategy.getShardSelectionStrategy().selectShardIdForNewObject(
-				statement, obj);
+        ShardId shardId = shardStrategy.getShardSelectionStrategy().selectShardIdForNewObject(
+                statement, obj);
 		// lock has been requested but shard has not yet been selected - lock it in
 		// if(lockedShard) {
 		// lockedShardId = shardId;
@@ -376,9 +373,19 @@ public class ShardedSqlSessionImpl implements ShardedSqlSession, ShardIdResolver
 
 	List<Shard> determineShardsViaResolutionStrategyWithWriteOperation(String statement,
 			Object parameter) {
-		Serializable id = this.extractId(parameter);
-        String entityName = guessVitualTableName(statement, parameter);
-		return this.determineShardsObjectsViaResolutionStrategy(statement, parameter, id, entityName);
+        List<Shard> rtn = new LinkedList<Shard>();
+        List<ShardId> ids =  shardedSqlSessionFactory.getWrite();
+
+        loop:for(ShardId id : ids) {
+            for(Shard s : shards) {
+                if(s.getShardIds().contains(id)) {
+                    rtn.add(s);
+                    continue loop;
+                }
+            }
+        }
+
+        return rtn;
 	}
 
 
