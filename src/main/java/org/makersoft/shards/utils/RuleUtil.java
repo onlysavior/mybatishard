@@ -29,8 +29,6 @@ import static org.makersoft.shards.session.impl.ShardedSqlSessionImpl.extractId;
  * To change this template use File | Settings | File Templates.
  */
 public class RuleUtil {
-    public static final String SPLIT_BEGIN = "@{";
-    public static final String SPLIT_END = "}@";
 
     public static String replcePlaceHolder(String sql,
                                     VirtualTable rule,
